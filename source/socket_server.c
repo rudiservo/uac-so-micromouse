@@ -195,13 +195,13 @@ void map_navigate(struct map *map, struct server_socket *server) {
 }
 
 
-int main() {
+int main(int argc, char* argv[]) {
     struct server_socket *server = malloc(sizeof(server));
     struct map *map = malloc(sizeof(map)) ;
     
     map_init(map, MAP_X, MAP_Y);
     char *filename = malloc(120);
-    filename = "/home/rudi/Projects/UAc/uac-so-micromouse/maps/88.txt";
+    filename = argv[1];
     map_read(map, filename);
     map_print(map);
     server_start(server);
