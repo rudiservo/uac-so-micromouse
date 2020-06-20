@@ -36,6 +36,7 @@ int server_start(struct server_socket *server) {
         perror("opening datagram socket");
         exit(1);
     }
+    
     /* Create servaddr with wildcards. */
     server->addr.sin_family = AF_INET;
     server->addr.sin_addr.s_addr = INADDR_ANY;
@@ -53,15 +54,12 @@ int server_start(struct server_socket *server) {
         exit(1);
     }
     printf("Socket port #%d\n", ntohs( server->addr.sin_port));
-    if ( read(server->sock, &server->buffer, 1024) == -1 ) perror("receiving datagram packet");
 }
 
 int server_read(struct server_socket *server) {
-    /* Read from the socket. */
     
-    //Read from the socket, collect info about the client and return message.
-    
-    int n, len;
+    int n;
+    int len;
     len = sizeof(server->client);
     n = recvfrom(server->sock, (char *)server->buffer, 1024,
                     MSG_WAITALL, ( struct sockaddr *) &server->client,
@@ -71,7 +69,7 @@ int server_read(struct server_socket *server) {
         sendto(server->sock, &answer, sizeof(answer),
             MSG_CONFIRM, (const struct sockaddr *) &server->client,
                 len);
-    printf("\033[%d;%dfClient : %s\n", 0,55, server->buffer);
+    
 
     return 1;
     //printf("-->%s\n", buf);
@@ -120,7 +118,7 @@ int map_read(struct map *map, char *filename)
                     map->start.y = j;
                 default:
                     map->pos[j][i+1] = str[i];
-                    printf("\nX=%d, Y=%d, C=%c", j, i, map->pos[j][i]);
+                    // printf("\nX=%d, Y=%d, C=%c", j, i, map->pos[j][i]);
                     break;
             }
         }
@@ -147,61 +145,52 @@ void map_print(struct map *map) {
 }
 
 void map_navigate(struct map *map, struct server_socket *server) {
-    printf("\033[2J");
-    printf( "\033[0;0f");
-    printf ("Position: %d, %d         Port: %d\n", map->start.x, map->start.y, ntohs( server->addr.sin_port));
-    char str[MAP_X];
-    for (int j = 1; j < MAP_Y; j++) {
-        for(int i = 1; i< MAP_X; i++ ) {
-            printf("%c", map->pos[j][i]);
-        }
-        if (j!= (MAP_Y - 2)) {
-            printf("\n");
-        }
-    }
-    printf("\033[K");
+    // printf("\033[K");
     int ch;
     int pos_x = map->start.x;
     int pos_y = map->start.y + 1;
     int pos_x_new = pos_x;
     int pos_y_new = pos_y;
     char pos_type;
-    printf( "\033[%d;%df", pos_y, pos_x);
+    printf( "\033[%d;%dfM", pos_y, pos_x);
+
     while (server_read(server)) {
-        printf( "\033[%d;%df ", pos_y, pos_x);
-        switch ((int) *server->buffer) {
+        ch = (int)*server->buffer;
+        printf("\033[%d;%dfClient : %s\n", 0,55, server->buffer);
+        switch (ch) {
             case 'w':
-                pos_y_new --;
+                --pos_y_new;
                 break;
             case 'a':
-                pos_x_new --;
+                --pos_x_new;
                 break;
             case 's':
-                pos_y_new ++;
+                ++pos_y_new;
                 break;
             case 'd':
-                pos_x_new ++;
+                ++pos_x_new;
                 break;
             default:
                 break;
 
         }
-        pos_type= map->pos[pos_y_new - 1][pos_x_new];
-        if (pos_type == ' ' || pos_type=='S') {
+        pos_type = map->pos[(pos_y_new - 1)][pos_x_new];
+        if ((pos_x != pos_x_new || pos_y_new != pos_y) && (pos_type == ' ' || pos_type == 'S')) {
+            printf("\033[%d;%df ",pos_y, pos_x);
             pos_x = pos_x_new;
             pos_y = pos_y_new;
+            printf("\033[%d;%dfM", pos_y, pos_x);
+            printf ("\033[0;0fPosition: %d, %d   \n", pos_x, pos_y);
         } else {
             pos_x_new = pos_x;
             pos_y_new = pos_y;
         }
-        printf( "\033[1;11f");
-        printf( "%d, %d, %c   ", pos_x, pos_y, map->pos[pos_y][pos_x]);
-        printf( "\033[%d;%dfM", pos_y, pos_x);
+        
+        // printf( "%d, %d, %c   ", pos_x, pos_y, map->pos[pos_y][pos_x]);
+        
         // printf( "\033[u");
     }
-    printf( "\033[%d;%dfX", pos_y, pos_x);
     printf( "\033[%d;%df", 36, 1);
-    // system ("/bin/stty cooked");
     return;
 }
 
@@ -216,7 +205,7 @@ int main() {
     map_read(map, filename);
     map_print(map);
     server_start(server);
-    printf("\033[0;0f%d",server->addr.sin_port);
+    printf("\033[0;0f%d",ntohs(server->addr.sin_port));
     // server_read(server);
     map_navigate(map, server);
     exit(0);

@@ -54,21 +54,32 @@ void main(int argc, char* argv[])
   char data;
   int n,len;
     char buffer[1024];
+    
+  struct termios oldtc;
+  struct termios newtc;
+  tcgetattr(STDIN_FILENO, &oldtc);
+  newtc = oldtc;
+  newtc.c_lflag &= ~(ICANON | ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &newtc);
+
 //    system ("/bin/stty raw");
   while ( ( ch = getchar()) != 'q') {
     /* Send message. */
-    printf("\nSending Message %c\n", ch);
+    // printf("\nSending Message %c\n", ch);
     data = (char) ch;
+    printf("\nSending Message %c\n", data);
     if (sizeof(data) && sendto(sock, &data, sizeof(data) ,0, hp->ai_addr,hp->ai_addrlen) == -1)
         perror("sending datagram message");
     //receiving a message from the server...
-
     n = recvfrom(sock, (char *)buffer, 1024,
                     MSG_WAITALL, (struct sockaddr *) &server,
                     &len);
         buffer[n] = '\0';
         printf("Server : %s\n", buffer);
   }
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldtc);
+  fflush(stdout);
+
 //    system ("/bin/stty cooked");
   close(sock);
   exit(0);

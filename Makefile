@@ -25,5 +25,3 @@ build:
 	gcc source/socket_server.c -o builds/socket_server
 	@echo "bulding client"
 	gcc source/socket_client.c -o builds/socket_client
-	@echo "bulding client Termios"
-	gcc source/socket_client_termios.c -o builds/socket_client_termios
