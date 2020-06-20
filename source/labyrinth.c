@@ -11,14 +11,14 @@ struct positionXY {
     int y;
 };
 
-int main() {
+int main(int argc, char* argv[]) {
     int MAXCHAR = 100000;
     struct stat st;
 
     struct positionXY start;
     char map[MAP_X][MAP_Y];
     FILE *fp;
-    char* filename = "/home/rudi/Projects/UAc/uac-so-micromouse/maps/88.txt";
+    char* filename = argv[1];
 
     stat(filename, &st);
     MAXCHAR = st.st_size;
