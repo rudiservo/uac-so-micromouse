@@ -71,11 +71,11 @@ void main(int argc, char* argv[])
     if (sizeof(data) && sendto(sock, &data, sizeof(data) ,0, hp->ai_addr,hp->ai_addrlen) == -1)
         perror("sending datagram message");
     //receiving a message from the server...
-    n = recvfrom(sock, (char *)buffer, 1024,
-                    MSG_WAITALL, (struct sockaddr *) &server,
-                    &len);
-        buffer[n] = '\0';
-        printf("Server : %s\n", buffer);
+    // n = recvfrom(sock, (char *)buffer, 1024,
+    //                 MSG_WAITALL, (struct sockaddr *) &server,
+    //                 &len);
+    //     buffer[n] = '\0';
+    //     printf("Server : %s\n", buffer);
   }
   tcsetattr(STDIN_FILENO, TCSANOW, &oldtc);
   fflush(stdout);
