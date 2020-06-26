@@ -22,6 +22,6 @@ single_mouse:
 
 build:
 	@echo "bulding server"
-	gcc source/socket_server.c -o builds/socket_server
+	gcc -pthread source/socket_server.c -o builds/socket_server
 	@echo "bulding client"
 	gcc source/socket_client.c -o builds/socket_client
